@@ -1,0 +1,98 @@
+---
+title: "211019_2018_abundanc_demo"
+author: "Lynette Lee"
+date: "10/19/2021"
+output: github_document
+---
+
+# Goal
+
+This document shows how **individual bottle** bacterial abundance data from 2018 remineralization experiments were processed. Qc'd and analyzed. It also provides an intro to data processing and analysis with Rstudio and R Markdown. 
+
+#Intro to R Markdown
+
+Create a new code chunk: 
+  Macs - Cmd + option + i
+  Pc - Ctrl + alt + i
+
+Load packages that we'll need to analyze our data. 
+
+Run whole code chunk: 
+  Macs - Cmd + shift + return 
+  
+```{r Load Packages, warning=FALSE}
+library(tidyverse)
+library(readxl)
+library(lubridate)
+```
+
+We can toggle on/off warnings in chunks if we don't want them in our final markdown file. 
+
+# Import Data
+
+Macs: 
+  <-: Option + -
+  #: use for commenting, tells Rstudio not to run code
+  
+Direct file path
+  tab completion: Tab + Command or Option
+  
+Go into Dataframe (from spreadsheet): use $ 
+
+Join 2 dataframes together: 
+  
+```{r}
+excel_sheets("~/Desktop/GitHub/EEMB 144L/144l_student_2021/Input_Data/week3/144L_2018_BactAbund.xlsx")
+
+#Mac: to make an arrow, use Option + - 
+
+metadata <- read_excel("~/Desktop/GitHub/EEMB 144L/144l_student_2021/Input_Data/week3/144L_2018_BactAbund.xlsx", sheet = "Metadata")
+glimpse(metadata)
+unique(metadata$Bottle)
+unique(metadata$Treatment)
+
+data <- read_excel("~/Desktop/GitHub/EEMB 144L/144l_student_2021/Input_Data/week3/144L_2018_BactAbund.xlsx", sheet = "Data")
+glimpse(data)
+
+joined <- left_join(metadata, data) 
+#attach data to metadata
+#joins right dataset to the left on by using variables that aqre the same across the two dataframes
+glimpse(joined)
+#when joining data, must include the columns that are the same between the two dataframes
+
+```
+
+# Prepare Data 
+
+We will convert the Date and Time column values from characters to dates, add columns with time elapsed for each treatment, and convert to cells/L because it will help us match up with the TOC data later. 
+
+We will then subset the data for variables of interest and drop NA values.
+
+To do this, we are going to use **piping**. Piping is an operation that allows us to write moer efficient code. The way that we'll use it here is to manipulate our data sequentially. 
+
+Pipe operator "%>%", which basically says like "first do one thing to the data. THEN, don this other thing." (with the %>% operator taking the place of the word "THEN" in this scenario). 
+
+Every call that we invoke with an additional pipe is going to take on the variable (dataframe) that we specify at the beginning.
+
+```{r}
+cells <- joined %>%
+  mutate(Datetime = ymd_hm(Datetime), #splits apart Datetime as specified 
+  cells_L = Cells_ml * 1000) %>%
+  group_by(Treatment, Bottle) %>%
+#group our dataset so that we can calculate the time elasped properly.
+#calculate within the treatment, and within bottle, separately.
+  mutate(interv = interval(first(Datetime), Datetime),
+#calculate the interval Tn - T0
+         s = as.numeric(interv),
+         hours = s/3600,
+         days = hours/24) %>%
+  ungroup() %>%
+  select(Experiment:DNA_Sample, cells_L, hours, days) %>%
+#pipe knows that we are in "cell" and knows to select those column names.
+#Experiment: DNA_Sample means everything in between Experiment to DNA_Sample column. 
+  drop_na(cells_L)
+glimpse(cells)
+#drop the N/A values in the specific column named
+
+
+```
