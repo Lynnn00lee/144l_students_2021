@@ -18,15 +18,15 @@ library(lubridate)
 # Import Data
 
 ```{r}
-excel_sheets("~/Desktop/GitHub/EEMB 144L/211019_2021_Abundance/144l_students_2021/Input_Data/week4/144L_2021_BactAbund.xlsx")
+excel_sheets("~/Desktop/GitHub/EEMB 144L/144l_students_2021/211019_2021_Abundance/144l_students_2021/Input_Data/week4/144L_2021_BactAbund.xlsx")
 
-metadata <- read_excel("~/Desktop/GitHub/EEMB 144L/211019_2021_Abundance/144l_students_2021/Input_Data/week4/144L_2021_BactAbund.xlsx", sheet = "Metadata")
+metadata <- read_excel("~/Desktop/GitHub/EEMB 144L/144l_students_2021/211019_2021_Abundance/144l_students_2021/Input_Data/week4/144L_2021_BactAbund.xlsx", sheet = "Metadata")
 #glimpse(metadata)
 
 unique(metadata$Bottle)
 unique(metadata$Treatment)
 
-data <- read_excel("~/Desktop/GitHub/EEMB 144L/211019_2021_Abundance/144l_students_2021/Input_Data/week4/144L_2021_BactAbund.xlsx", sheet = "Data")
+data <- read_excel("~/Desktop/GitHub/EEMB 144L/144l_students_2021/211019_2021_Abundance/144l_students_2021/Input_Data/week4/144L_2021_BactAbund.xlsx", sheet = "Data")
 #glimpse(data)
 
 joined <- left_join(metadata, data)
